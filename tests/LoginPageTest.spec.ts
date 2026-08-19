@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
+import { DashboardPage } from '../pages/Dashboardpage';
 
-// Login test
+
 test('verify user can login successfully', async ({ page }) => {
 
   const loginPage = new LoginPage(page);
+  const dashboardPage = new DashboardPage(page);
 
   // Navigate to the login page
   loginPage.navigate();
@@ -14,4 +16,7 @@ test('verify user can login successfully', async ({ page }) => {
   
   // Verify successful login
   await expect(page).toHaveURL(/dashboard/);
-});
+
+  await dashboardPage.isDashboardPageLoaded();
+
+})
