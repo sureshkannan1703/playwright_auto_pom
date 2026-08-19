@@ -16,5 +16,9 @@ export class DashboardPage{
         return true;
     }
 
+    async waitForPage(): Promise<void> {
+    await this.page.waitForLoadState('domcontentloaded');
+    }
+
     
 }

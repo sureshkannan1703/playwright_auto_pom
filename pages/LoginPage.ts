@@ -14,6 +14,10 @@ export class LoginPage{
         this.passwordField = page.locator('input[name="password"]');
         this.loginButton = page.locator('button[type="submit"]');
     }
+
+    async waitForPage(): Promise<void> {
+      await this.page.waitForLoadState('domcontentloaded');
+    }
     
     async navigate(): Promise<void>{
             await this.page.goto('/web/index.php/auth/login');
