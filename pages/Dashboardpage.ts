@@ -1,24 +1,20 @@
 import {Page, Locator,expect} from "@playwright/test";
+import { BasePage } from "./BasePage";
 
-export class DashboardPage{
+//Functions and locators that are specific to the Dashboard page can be defined in this class. 
+//All other page classes will extend this class and inherit these functions.
+export class DashboardPage extends BasePage{
 
-    readonly page : Page;
     readonly dashboardHeader : Locator;
 
     constructor(page : Page){
-        this.page = page;
+        super(page);
         this.dashboardHeader = page.getByRole('heading',{name : 'Dashboard'})
     }
 
     
     async isDashboardPageLoaded(): Promise<boolean>{
-        await expect(this.dashboardHeader).toBeVisible();
-        return true;
+        return await this.dashboardHeader.isVisible();
     }
 
-    async waitForPage(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-    }
-
-    
 }

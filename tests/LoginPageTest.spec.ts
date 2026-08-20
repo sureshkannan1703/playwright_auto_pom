@@ -9,14 +9,14 @@ test('verify user can login successfully', async ({ page }) => {
   const dashboardPage = new DashboardPage(page);
 
   // Navigate to the login page
-  loginPage.navigate();
+  await loginPage.navigate();
 
   // Enter username and password and click login
-  loginPage.login('Admin', 'admin123');
+  await loginPage.login('Admin', 'admin123');
   
   // Verify successful login
   await expect(page).toHaveURL(/dashboard/);
 
-  await dashboardPage.isDashboardPageLoaded();
+  expect(await dashboardPage.isDashboardPageLoaded()).toBe(true);
 
 })
