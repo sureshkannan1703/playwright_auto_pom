@@ -1,22 +1,19 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
-import { DashboardPage } from '../pages/Dashboardpage';
+import { test, expect} from './fixtures/test';
 
+test(
+  'verify user can login successfully',
+  async ({ page, loginPage, dashboardPage }) => {
 
-test('verify user can login successfully', async ({ page }) => {
+    // Navigate to the login page
+    await loginPage.navigate();
 
-  const loginPage = new LoginPage(page);
-  const dashboardPage = new DashboardPage(page);
+    // Login with valid credentials
+    await loginPage.login('Admin', 'admin123');
 
-  // Navigate to the login page
-  await loginPage.navigate();
+    // Verify successful navigation
+    await expect(page).toHaveURL(/dashboard/);
 
-  // Enter username and password and click login
-  await loginPage.login('Admin', 'admin123');
-  
-  // Verify successful login
-  await expect(page).toHaveURL(/dashboard/);
-
-  expect(await dashboardPage.isDashboardPageLoaded()).toBe(true);
-
-})
+    // Verify Dashboard page is loaded
+    expect(await dashboardPage.isDashboardPageLoaded()).toBe(true);
+  }
+);

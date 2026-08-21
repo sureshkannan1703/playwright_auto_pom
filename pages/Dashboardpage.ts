@@ -11,7 +11,6 @@ export class DashboardPage extends BasePage{
         super(page);
         this.dashboardHeader = page.getByRole('heading',{name : 'Dashboard'})
     }
-
     
     async isDashboardPageLoaded(): Promise<boolean>{
         return await this.dashboardHeader.isVisible();
