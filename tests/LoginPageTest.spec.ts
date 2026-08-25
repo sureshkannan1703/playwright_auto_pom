@@ -1,4 +1,5 @@
 import { test, expect} from './fixtures/test';
+import { users} from '../test-data/users';
 
 test(
   'verify user can login successfully',
@@ -8,7 +9,7 @@ test(
     await loginPage.navigate();
 
     // Login with valid credentials
-    await loginPage.login('Admin', 'admin123');
+    await loginPage.login(users.validUser.username!, users.validUser.password!);
 
     // Verify successful navigation
     await expect(page).toHaveURL(/dashboard/);

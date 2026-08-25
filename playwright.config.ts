@@ -1,10 +1,11 @@
 import { defineConfig } from '@playwright/test';
+import dotenv from 'dotenv';
 
 export default defineConfig({
   testDir: './tests',
 
   use: {
-    baseURL: 'https://opensource-demo.orangehrmlive.com',
+    baseURL: process.env.BASE_URL,
     screenshot: 'only-on-failure',
   },
 
