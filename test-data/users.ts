@@ -1,7 +1,9 @@
+import {env} from '../config/env';
+
 export const users = {
   validUser: {
-    username: process.env.USERNAME,
-    password: process.env.PASSWORD
+    username: env.userName,
+    password: env.password
   },
   
   invalidUser: {

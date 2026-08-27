@@ -9,7 +9,7 @@ test(
     await loginPage.navigate();
 
     // Login with valid credentials
-    await loginPage.login(users.validUser.username!, users.validUser.password!);
+    await loginPage.login(users.validUser.username, users.validUser.password);
 
     // Verify successful navigation
     await expect(page).toHaveURL(/dashboard/);
