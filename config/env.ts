@@ -1,21 +1,18 @@
 import process from "process";
 import "dotenv/config";
 
-
-
 function getRequiredEnv(text: string): string {
-
     const value = process.env[text];
 
-   if(!value){
+    if (!value) {
         throw new Error(`Missing required environment variable: ${text}`);
-   }
-   return value;
+    }
+
+    return value;
 }
 
-
-export const env ={
+export const env = {
     baseUrl: getRequiredEnv('BASE_URL'),
-    userName: getRequiredEnv('USERNAME'),
-    password: getRequiredEnv('PASSWORD')
-}
+    userName: getRequiredEnv('TEST_USERNAME'),
+    password: getRequiredEnv('TEST_PASSWORD')
+};

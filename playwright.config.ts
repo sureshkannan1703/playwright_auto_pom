@@ -14,13 +14,20 @@ export default defineConfig({
   },
 
   projects: [
+
+    {
+      name : 'setup',
+      testMatch : /.*\.setup\.ts/,
+    },
+
     {
       name: 'chromium',
-
       use: {
         browserName: 'chromium',
         headless: false,
+        storageState : 'auth/user.json',
       },
+      dependencies : ['setup'],
     },
   ],
 });
