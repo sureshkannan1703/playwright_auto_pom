@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { EmployeeApi } from '../../api/clients/EmployeeAPI';
 import { ApiAuth } from '../../api/auth/ApiAuth';
 
-test('Verify Employee API', async ({ request, page }) => {
+test('Verify Employee API',{tag:['@api','@employee','@smoke']}, async ({ request, page }) => {
   const token = await ApiAuth.getAccessToken(request, page);
 
   const employeeApi = new EmployeeApi(request, token);
