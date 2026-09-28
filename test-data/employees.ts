@@ -3,13 +3,13 @@ export const employees = {
     validEmployee: {
         firstName: "John",
         lastName: "Doe",
-        employeeId: "EMP1001",
+        empNumber: "123",
     },
 
     anotherEmployee: {
         firstName: "David",
         lastName: "Brown",
-        employeeId: "EMP1002",
+        empNumber: "2",
     }
 
 }

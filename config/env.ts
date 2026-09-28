@@ -14,5 +14,9 @@ function getRequiredEnv(text: string): string {
 export const env = {
     baseUrl: getRequiredEnv('BASE_URL'),
     userName: getRequiredEnv('TEST_USERNAME'),
-    password: getRequiredEnv('TEST_PASSWORD')
+    password: getRequiredEnv('TEST_PASSWORD'),
+
+    apiBaseUrl: getRequiredEnv('API_BASE_URL'),
+    apiClientId: getRequiredEnv('API_CLIENT_ID'),
+    apiRedirectUri: getRequiredEnv('API_REDIRECT_URI')
 };
