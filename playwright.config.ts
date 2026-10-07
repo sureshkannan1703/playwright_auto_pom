@@ -1,33 +1,81 @@
 import { defineConfig } from '@playwright/test';
-import dotenv from 'dotenv';
-import {env} from './config/env';
+import { env } from './config/env';
+import process from 'process';
 
-// Load environment variables from .env file
-dotenv.config();
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './tests',
 
-  use: {
-    baseURL: env.baseUrl,
-    screenshot: 'only-on-failure',
+  fullyParallel: true,
+
+  forbidOnly: isCI,
+
+  retries: isCI ? 2 : 0,
+
+  workers: isCI ? 2 : 1,
+
+  timeout: 30_000,
+
+  expect: {
+    timeout: 8_000,
   },
 
-  projects: [
+  reporter: isCI
+    ? [['line'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
 
+  use: {
+  baseURL: env.baseUrl,
+
+  headless: isCI,
+
+  locale: 'en-US',
+
+  screenshot: 'only-on-failure',
+
+  video: 'retain-on-failure',
+
+  trace: 'on-first-retry',
+
+  actionTimeout: 10_000,
+
+  navigationTimeout: 30_000,
+},
+  projects: [
     {
-      name : 'setup',
-      testMatch : /.*\.setup\.ts/,
+      name: 'setup',
+
+      testMatch: /.*\.setup\.ts/,
     },
 
     {
-      name: 'chromium',
+      name: 'chromium-unauthenticated',
+
+      testMatch: /ui\/unauthenticated\/.*\.spec\.ts/,
+
       use: {
         browserName: 'chromium',
-        headless: false,
-        storageState : 'auth/user.json',
       },
-      dependencies : ['setup'],
+    },
+
+    {
+      name: 'chromium-authenticated',
+
+      testMatch: /ui\/authenticated\/.*\.spec\.ts/,
+
+      use: {
+        browserName: 'chromium',
+        storageState: 'auth/user.json',
+      },
+
+      dependencies: ['setup'],
+    },
+
+    {
+      name: 'api',
+
+      testMatch: /api\/.*\.spec\.ts/,
     },
   ],
 });

@@ -1,5 +1,5 @@
-import { test, expect } from '../fixtures/test';
-import { employees } from '../../test-data/employees';
+import { test, expect } from '../../fixtures/test';
+import { employees } from '../../../test-data/employees';
 
 test('verify employee details', async ({ page }) => {
 

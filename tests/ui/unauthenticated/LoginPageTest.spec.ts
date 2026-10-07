@@ -1,8 +1,8 @@
-import { test, expect} from '../fixtures/test';
-import { users} from '../../test-data/users';
+import { test, expect} from '../../fixtures/test';
+import { users} from '../../../test-data/users';
 
 test(
-  'verify user can login successfully',{tag:['@auth','@ui','@smoke']},
+  'verify user can login successfully',{tag:['@login','@ui','@smoke']},
   async ({ page, loginPage, dashboardPage }) => {
 
     // Navigate to the login page
