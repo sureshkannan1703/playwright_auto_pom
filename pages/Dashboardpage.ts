@@ -1,4 +1,4 @@
-import {Page, Locator} from "@playwright/test";
+import {Page, Locator, expect} from "@playwright/test";
 import { BasePage } from "./BasePage";
 import { Sidebar } from "../components/Sidebar";
 
@@ -15,8 +15,8 @@ export class DashboardPage extends BasePage{
         this.dashboardHeader = page.getByRole('heading',{name : 'Dashboard'})
     }
     
-    async isDashboardPageLoaded(): Promise<boolean>{
-        return await this.dashboardHeader.isVisible();
+    async isDashboardPageLoaded(): Promise<void>{
+       await expect(this.dashboardHeader).toBeVisible();
     }
 
     async navigateToDashboard() {
