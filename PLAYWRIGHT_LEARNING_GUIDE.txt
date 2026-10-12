@@ -1,0 +1,280 @@
+PLAYWRIGHT MCP AND PAGE OBJECT MODEL - LEARNING GUIDE
+====================================================
+
+Purpose
+-------
+This guide summarizes the browser inspection and Playwright page-object work
+performed in this project. It is intended as a practical starting point for a
+new learner.
+
+
+1. Playwright MCP: what it is and how to use it
+------------------------------------------------
+Playwright MCP lets an assistant control a browser through Playwright tools.
+In this project, .vscode/mcp.json configures the server with:
+
+    @playwright/mcp@latest --caps=testing
+
+The "testing" capability set provides browser inspection and testing-oriented
+tools. The browser may initially be at about:blank; it must be navigated to the
+application before page elements can be inspected.
+
+Useful MCP workflow:
+
+    1. Navigate to the page under test.
+    2. Read the accessibility snapshot.
+    3. Search the snapshot for expected text or roles.
+    4. Verify visibility or inspect element details when necessary.
+    5. Perform interactions only when the task requires them.
+
+Typical MCP operations used:
+
+    navigate    Open a URL.
+    snapshot    Read the accessible page structure.
+    find        Find matching text or roles in the snapshot.
+    fill_form   Fill form fields.
+    click       Click a button or other element.
+    evaluate    Inspect page state and visibility.
+
+Prefer the accessibility snapshot and role/name locators over CSS selectors.
+Use CSS only when the UI element has no useful accessible name, such as the
+icon-only edit/delete buttons on the employee table.
+
+One early smoke check started at about:blank, opened the TodoMVC React demo,
+and verified the visible textbox by its "What needs to be done?" placeholder.
+This demonstrated that MCP actions operate on the current browser page; the
+TodoMVC demo is separate from this project's OrangeHRM application.
+
+Do not expose credentials in notes, test output, or source control. This
+project's tests use its configured test data and environment settings.
+
+
+2. Accessible roles, names, and reliable locators
+--------------------------------------------------
+An accessible role describes the kind of control, and its accessible name
+identifies it to assistive technology and role-based Playwright locators.
+
+For example, the login page exposed:
+
+    heading "Login"       -> getByRole('heading', { name: 'Login' })
+    textbox "Username"    -> getByRole('textbox', { name: 'Username' })
+    textbox "Password"    -> getByRole('textbox', { name: 'Password' })
+    button "Login"        -> getByRole('button', { name: 'Login' })
+
+The existing LoginPage uses CSS locators based on input names and submit
+button type. Those locators matched the observed page. Role-based locators
+describe user-visible behavior more directly and are often easier to
+understand and maintain.
+
+The dashboard exposed a heading with role "heading" and accessible name
+"Dashboard". Its presence on the dashboard route is a useful loaded-state
+check.
+
+The employee page does NOT have a heading named "Employee". Its headings are:
+
+    heading "PIM"                    level 6
+    heading "Employee Information"   level 5
+
+The word "Employee" may appear in the page or employee records, but that does
+not make it a heading. Match both role and name when asserting a heading.
+
+
+3. Employee List page: observed UI
+----------------------------------
+The page URL is:
+
+    /web/index.php/pim/viewEmployeeList
+
+Observed page headings:
+
+    PIM
+    Employee Information
+
+Observed employee filters:
+
+    Employee Name       text input with autocomplete
+    Employee Id         text input
+    Employment Status   dropdown
+    Include             dropdown (defaults to current employees)
+    Supervisor Name     text input with autocomplete
+    Job Title           dropdown
+    Sub Unit            dropdown
+
+The page also has Reset, Search, and Add controls, a record count, an employee
+table, and pagination. The shared application shell includes its sidebar,
+top navigation, and footer.
+
+Employee table columns:
+
+    Selection checkbox
+    Id
+    First (& Middle) Name
+    Last Name
+    Job Title
+    Employment Status
+    Sub Unit
+    Supervisor
+    Actions
+
+Rows provide pencil/edit and trash/delete icon buttons. These buttons did not
+have accessible names in the observed UI. The page object therefore locates
+them by their icon classes, scoped to an employee row. If the application UI
+is under your control, adding accessible labels to these buttons would be
+better than relying on icon CSS.
+
+Pagination was exposed as a navigation landmark named "Pagination Navigation",
+with numbered page buttons and an icon-only next-page button.
+
+
+4. Page Object Model implementation
+------------------------------------
+The page object is:
+
+    pages/EmployeePage.ts
+
+It extends BasePage and groups Employee List locators and helpers together.
+Its locators cover:
+
+    - PIM and Employee Information headings
+    - Sidebar search field and employee filters
+    - Reset, Search, and Add buttons
+    - Employee table, headers, and data rows
+    - Records-found summary and pagination
+    - Row-specific edit and delete buttons
+
+The filter controls are found by locating their shared input-group container
+using its visible label, then locating the input or dropdown within that group.
+This is more specific than selecting the nth input on the whole page.
+
+Examples of page-object methods:
+
+    navigate()                       Open the Employee List route.
+    isEmployeePageLoaded()           Check the Employee Information heading.
+    getEmployeeRow(employeeId)       Find a row by its exact employee ID cell.
+    getEditButton(employeeId)        Find that row's edit icon button.
+    getDeleteButton(employeeId)      Find that row's delete icon button.
+    getPageButton(pageNumber)        Find a numbered pagination button.
+
+Prefer a semantic locator where possible. For controls with no accessible
+label, scope the selector to the smallest useful container (for example, a
+specific employee row) to avoid matching unrelated elements.
+
+
+5. Fixtures and authenticated test projects
+--------------------------------------------
+The shared fixture file is:
+
+    tests/fixtures/test.ts
+
+It creates page objects using the Playwright Page and makes them available to
+tests as fixtures. EmployeePage was added as an employeePage fixture so tests
+can request it directly:
+
+    test('example', async ({ employeePage }) => {
+      await employeePage.navigate();
+    });
+
+The authentication setup is:
+
+    tests/auth.setup.ts
+
+It signs in using configured test data and saves browser storage state. In
+playwright.config.ts, the chromium-authenticated project uses that storage
+state and matches tests under:
+
+    tests/ui/authenticated/*.spec.ts
+
+The existing employee UI spec is:
+
+    tests/ui/authenticated/EmployeeTest.spec.ts
+
+The ".spec.ts" suffix and authenticated directory are important: they match
+the existing project's testMatch pattern. A differently named file such as
+EmployeePagetest.ts may not be discovered by the configured project.
+
+
+6. Employee List test
+---------------------
+The employee-list test in EmployeeTest.spec.ts checks:
+
+    - Both page headings are visible.
+    - All employee filter controls are visible.
+    - Reset, Search, and Add are visible.
+    - A records-found summary and at least one employee row are present.
+    - Expected table headers are present.
+    - Pagination, page 1, and the next-page control are visible.
+    - The first employee row has edit and delete buttons.
+
+The first table column is a selection checkbox, so the test skips that column
+when checking the named headers. Header text includes decorative sort icons,
+so checking each expected header in its known column is more reliable than
+substring matching across the entire table.
+
+Focused validation command:
+
+    npx playwright test tests/ui/authenticated/EmployeeTest.spec.ts --project=chromium-authenticated --grep "employee list page"
+
+The employee-list UI test passed in the authenticated project, including the
+authentication setup.
+
+
+7. Troubleshooting lessons
+--------------------------
+Heading not found:
+    Check the snapshot for the actual role and accessible name. The Employee
+    List page is headed by "PIM" and "Employee Information", not "Employee".
+    Text in a row or paragraph is not necessarily a heading.
+
+Locator matches too many elements:
+    Avoid broad substring searches. "Id" can also match "Supervisor" because
+    it contains those letters. Use exact accessible names, a regex with
+    suitable boundaries, or the known table-column index.
+
+Icon buttons have no accessible names:
+    Scope selectors to the row and use the icon class as a fallback. Note the
+    accessibility limitation; if application code can be changed, provide
+    accessible labels such as "Edit employee" and "Delete employee".
+
+Test does not run in the expected project:
+    Check the test file path and name against testMatch in playwright.config.ts.
+    Authenticated UI tests belong in tests/ui/authenticated and use the
+    configured authenticated project.
+
+TypeScript compiler unavailable:
+    The repository did not have a local TypeScript compiler binary. A focused
+    compiler invocation through npm exec was used for EmployeePage.ts and
+    passed. Avoid adding dependencies solely for one-off validation unless the
+    project requires them.
+
+Existing unrelated test failure:
+    EmployeeTest.spec.ts also contains a data-only assertion expecting an
+    employee number matching /^EMP\d{4}$/. During the broader run, the fixture
+    data value was "123", so that assertion failed. This is separate from the
+    passing Employee List UI test and needs test-data/expectation review before
+    changing it.
+
+
+8. Suggested learner exercises
+------------------------------
+1. Add a method that fills the Employee Id filter and clicks Search.
+2. Assert that a known employee row appears after filtering.
+3. Add a test for Reset returning filters to their default values.
+4. Improve accessible labels for the edit/delete icon buttons in the UI, then
+   replace their CSS locators with getByRole locators.
+5. Add a stable assertion for the selected pagination page if the application
+   exposes its state accessibly.
+6. Run only the relevant test while iterating, then run the full authenticated
+   project before submitting changes.
+
+
+Related project files
+---------------------
+    .vscode/mcp.json
+    pages/BasePage.ts
+    pages/LoginPage.ts
+    pages/DashboardPage.ts
+    pages/EmployeePage.ts
+    tests/fixtures/test.ts
+    tests/auth.setup.ts
+    tests/ui/authenticated/EmployeeTest.spec.ts
+    playwright.config.ts
