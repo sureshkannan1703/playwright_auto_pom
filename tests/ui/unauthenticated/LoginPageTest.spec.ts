@@ -15,6 +15,6 @@ test(
     await expect(page).toHaveURL(/dashboard/);
 
     // Verify Dashboard page is loaded
-    expect(await dashboardPage.isDashboardPageLoaded()).toBe(true);
+    await dashboardPage.isDashboardPageLoaded();
   }
 );

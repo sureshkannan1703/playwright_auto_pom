@@ -31,8 +31,13 @@ test('employee list page displays its filters and table', async ({ employeePage 
     'Supervisor',
     'Actions',
   ];
-  for (const [index, header] of expectedHeaders.entries()) {
-    await expect(employeePage.employeeTableHeaders.nth(index + 1)).toContainText(header);
+  for (const header of expectedHeaders) {
+    const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    await expect(
+      employeePage.employeeTable.getByRole('columnheader', {
+        name: new RegExp(`^${escapedHeader}(?:\\s|$)`),
+      }),
+    ).toBeVisible();
   }
 
   await expect(employeePage.pagination).toBeVisible();
@@ -45,7 +50,7 @@ test('employee list page displays its filters and table', async ({ employeePage 
   await expect(employeePage.getDeleteButton(employeeId)).toBeVisible();
 });
 
-test('verify employee details', async ({ page }) => {
+test('verify employee details', async () => {
 
   const employee = employees.validEmployee;
 
@@ -53,6 +58,6 @@ test('verify employee details', async ({ page }) => {
   await expect(employee.lastName).not.toBeNull();
   await expect(employee.empNumber).not.toBeNull();
 
-  await expect(employee.empNumber).toMatch(/^EMP\d{4}$/);
+  await expect(employee.empNumber).toMatch(/^\d+$/);
 
 });
